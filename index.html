@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <title>Bate-papo Node.js e Socket.IO</title>
+    
+    <style>
+/* Estilos gerais */
+body {
+  background-color: #000; /* Fundo preto como no Instagram */
+  color: white;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+  padding-top: 60px; /* Espaço para o cabeçalho */
+}
+
+/* Cabeçalho estilizado com as cores do Instagram */
+header {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  padding: 15px 0;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  background: linear-gradient(45deg, #f9ce34, #ee2a7b, #6228d7);
+  color: white;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Lista de mensagens */
+#mensagens {
+  list-style-type: none;
+  padding: 10px;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+/* Estiliza cada mensagem */
+#mensagens li {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 18px;
+  word-wrap: break-word;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+/* Mensagens enviadas pelo usuário */
+#mensagens li:nth-child(even) {
+  background-color: #833ab4; /* Roxo do Instagram */
+  align-self: flex-end;
+  color: white;
+  border-bottom-right-radius: 5px;
+}
+
+/* Mensagens recebidas */
+#mensagens li:nth-child(odd) {
+  background-color: #3a3a3a; /* Cinza escuro */
+  align-self: flex-start;
+  color: white;
+  border-bottom-left-radius: 5px;
+}
+
+/* Estilizando formulário */
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: fixed;
+  bottom: 10px;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Input e botão */
+input, button {
+  padding: 10px;
+  border-radius: 20px;
+  border: none;
+  font-size: 14px;
+}
+
+input {
+  width: 80%;
+  background-color: #222;
+  color: white;
+}
+
+button {
+  background-color: #833ab4;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #a84dc2;
+}
+
+  </style>
+  </head>
+  <body>
+    <header>Instagram</header>
+    <ul id="mensagens"></ul>
+    <form>
+      <input id="nome" placeholder="Seu nome de usuário" autocomplete="off" /><br>
+      <input id="mensagem" placeholder="Sua mensagem" autocomplete="off" /><button>Enviar</button>
+    </form>
+    <!-- Importa o script do Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // Cria uma instância do Socket.IO
+      const socket = io();
+      // Seleciona o input do nome do usuário
+      const nomeInput = document.getElementById('nome');
+      // Seleciona o input da mensagem
+      const mensagemInput = document.getElementById('mensagem');
+      // Seleciona a lista de mensagens
+      const mensagens = document.getElementById('mensagens');
+
+      // Adiciona um evento de escuta para o envio do formulário
+      document.querySelector('form').addEventListener('submit', event => {
+        // Previne o envio padrão do formulário
+        event.preventDefault();
+        // Obtém o valor do input do nome do usuário
+        const nome = nomeInput.value;
+        // Obtém o valor do input da mensagem
+        const mensagem = mensagemInput.value;
+        // Verifica se ambos os campos foram preenchidos antes de enviar a mensagem
+        // Verifica se os valores são válidos (não estão em branco)
+        //trim() é um método da linguagem JavaScript que remove os espaços em branco do início e do final de uma string.
+        // emit envia um evento chamado "chat message" com um objeto contendo os valores de nome e mensagem para o servidor.
+        nome.trim() && mensagem.trim() && socket.emit('chat message', { nome, mensagem });
+        // Limpa o input da mensagem
+        mensagemInput.value = '';
+        // Desabilita o input do nome do usuário após a primeira mensagem
+        nomeInput.disabled = true; 
+      });
+
+      // Adiciona um evento de escuta para o evento de mensagem recebido do servidor
+      socket.on('chat message', dados => {
+        // Cria um elemento de lista para exibir a mensagem
+        const lista = document.createElement('li');
+        // Define o texto da mensagem
+        lista.textContent = `${dados.nome}: ${dados.mensagem}`;
+        // Adiciona o elemento de lista à lista de mensagens
+        mensagens.appendChild(lista);
+      });
+    </script>
+  </body>
+</html>
